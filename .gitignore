@@ -1,0 +1,8 @@
+# App dependencies
+qhue-app/node_modules
+qhue-app/.next
+qhue-app/.env.local
+qhue-app/.env*.local
+
+# OS
+.DS_Store
