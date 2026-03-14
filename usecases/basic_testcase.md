@@ -491,3 +491,56 @@ Mỗi card lớp học hiển thị đủ:
 | TC-20 | Màn hình kết quả đúng thông tin | UI/Display | Medium | MH3 |
 | TC-21 | Responsive mobile | UI/Display | Medium | MH1-3 |
 | TC-22 | Loading state đúng | UI/Display | Low | MH1-3 |
+
+---
+
+## Kết quả E2E Test (dev-browser headless)
+
+> **Ngày chạy:** 2026-03-15
+> **Công cụ:** dev-browser (Playwright headless)
+> **Server:** `http://localhost:3002`
+> **Tổng:** 20/20 PASS · 2 Skip (visual)
+
+### Happy Path
+
+| TC | Kết quả | Bằng chứng browser |
+|----|---------|-------------------|
+| TC-01 | ✅ PASS | Navigate `/courses` → click "Xem chi tiết" → click "Xác nhận Đăng ký" → redirect `/success`, heading "Đăng ký thành công!" |
+| TC-02 | ✅ PASS | Section "💡 Lớp của bạn (4)" xuất hiện lớp vừa ĐK với badge "🟢 Mới ĐK" |
+| TC-03 | ✅ PASS | Input "Toán" → URL `?keyword=To%C3%A1n` → đúng 2 lớp, label "Hiển thị 1–2 / 2 lớp" |
+| TC-04 | ✅ PASS | Chọn dropdown "2024-2025" → URL `?yearId=2024-2025` → 13 lớp, phân trang đúng |
+| TC-05 | ✅ PASS | Click "Hủy" → redirect `/courses`, không gọi `POST /api/enrollments` |
+
+### Negative / Exception
+
+| TC | Kết quả | Bằng chứng browser |
+|----|---------|-------------------|
+| TC-06 | ✅ PASS | Trang `/courses/uuid-toan-12a` không có nút ĐK, hiển thị "🎉 Bạn đã đăng ký lớp này" + nút "Vào học"; API → HTTP 409 `ALREADY_ENROLLED` |
+| TC-07 | ✅ PASS | Badge `🔴 Hết chỗ`, nút `disabled=true class="cursor-not-allowed"`; API → HTTP 422 `COURSE_FULL` |
+| TC-08 | ✅ PASS | 2 `Promise.all` đồng thời: student khác nhau → 201+201 (còn chỗ); cùng student → 201+409; lớp full → 422+422 |
+| TC-09 | ✅ PASS | `Authorization: Bearer expired-token-xyz` → HTTP 401, message "Phiên đăng nhập đã hết hạn" |
+| TC-10 | ✅ PASS | Monkey-patch fetch → `TypeError` → toast "Có lỗi kết nối. Vui lòng thử lại.", nút reset về active |
+| TC-11 | ✅ PASS | HTTP 500 → message "Hệ thống đang gặp sự cố. Vui lòng thử lại sau.", không có stack trace |
+| TC-12 | ✅ PASS | `/courses/uuid-anh-12b` → badge `⚪ Chưa mở`, nút text "⚪ Chưa mở đăng ký — Dự kiến: 01/12/2025", `disabled=true` |
+| TC-13 | ✅ PASS | `studentId: "teacher-001"` → HTTP 403 `{ "code": "FORBIDDEN" }` |
+| TC-14 | ✅ PASS | Keyword `xyz_khong_co_lop_nay_123` → `<H2>Không tìm thấy lớp học phù hợp</H2>` + `<A href="/courses">Xóa bộ lọc</A>` |
+| TC-15 | ✅ PASS *(đã fix)* | `/courses/course-khong-ton-tai-abc123` → **HTTP 404** (dùng `notFound()`), trang "Không tìm thấy lớp học này" + nút "← Quay lại danh sách lớp" |
+| TC-16 | ✅ PASS *(đã fix)* | Playwright: click 1 → `fetch count=1`; click 2 → timeout (nút đã unmount/disabled); `fetch /api/enrollments POST count: 1` |
+
+### UI / Display
+
+| TC | Kết quả | Bằng chứng browser |
+|----|---------|-------------------|
+| TC-17 | ✅ PASS | Card DOM: tên lớp ✅ · GV ✅ · thời gian ✅ · sĩ số X/Y ✅ · hình thức học ✅ · nút "Xem chi tiết" ✅ |
+| TC-18 | ✅ PASS | 15 lớp tổng: trang 1 = 12 card, trang 2 = 3 card, label "Hiển thị 1–12 / 15 lớp" ✅ |
+| TC-19 | ✅ PASS | `data-status="full"` → "🔴 Hết chỗ" · `data-status="not_open"` → "⚪ Chưa mở" · `data-status="open"` → "🟢 Đang mở ĐK" |
+| TC-20 | ✅ PASS | Success page: tên lớp ✅ · GV ✅ · ngày buổi học đầu tiên ✅ · 3 CTA ("Vào học ngay" / "Xem lịch học" / "Đăng ký lớp khác") ✅ |
+| TC-21 | ⏭️ SKIP | Visual responsive — cần kiểm tra trên thiết bị thật |
+| TC-22 | ⏭️ SKIP | Visual loading skeleton — cần kiểm tra trên thiết bị thật |
+
+### Fix log
+
+| TC | Vấn đề phát hiện | Fix |
+|----|-----------------|-----|
+| TC-15 | Trang trả HTTP 200 thay vì 404 | Thay `return <div>` bằng `notFound()` + tạo `not-found.tsx` |
+| TC-16 | Double-click gọi API 2 lần | Thêm `pointer-events-none select-none` vào nút khi `loading=true` |
