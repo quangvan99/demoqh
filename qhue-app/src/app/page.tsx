@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function HomePage() {
   return (
     <main className="min-h-screen bg-background flex flex-col items-center justify-center gap-6 px-4">
@@ -16,10 +18,20 @@ export default function HomePage() {
         </p>
       </div>
 
+      {/* Navigation */}
+      <div className="flex flex-col sm:flex-row gap-3 mt-2">
+        <Link
+          href="/courses"
+          className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:opacity-90 transition-opacity shadow-md"
+        >
+          📚 Xem danh sách lớp học
+        </Link>
+      </div>
+
       {/* Status badge */}
       <span className="inline-flex items-center gap-2 rounded-full border border-border bg-muted px-4 py-1.5 text-sm text-muted-foreground">
         <span className="w-2 h-2 rounded-full bg-secondary animate-pulse" />
-        Đang xây dựng…
+        Hệ thống Demo — Đăng ký Lớp học
       </span>
     </main>
   );
