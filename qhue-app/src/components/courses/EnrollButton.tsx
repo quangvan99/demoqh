@@ -163,7 +163,7 @@ export default function EnrollButton({
           type="button"
           onClick={handleEnroll}
           disabled={loading}
-          className="flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-primary text-primary-foreground font-semibold hover:opacity-90 transition-opacity disabled:opacity-60 disabled:cursor-not-allowed"
+          className={`flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-primary text-primary-foreground font-semibold hover:opacity-90 transition-opacity disabled:opacity-60 disabled:cursor-not-allowed ${loading ? "pointer-events-none select-none" : ""}`}
           aria-label="Xác nhận Đăng ký"
         >
           {loading ? (
